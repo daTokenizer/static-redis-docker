@@ -3,6 +3,7 @@ import argparse
 import os
 from datetime import datetime
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Turn a list of .rdb files into a set of static redis docker images"
@@ -13,12 +14,16 @@ def parse_args():
     run_args = parser.parse_args()
     return run_args
 
+
 def main(args):
     for rdb_file in args.files:
         data_version = args.version
         if not data_version:
             data_date = os.path.getmtime(rdb_file)
-            data_version = datetime.fromtimestamp(data_date).strftime("%Y%m%d-%H")
+            data_date_str = datetime.fromtimestamp(data_date).strftime("%Y%m%d-%H")
+            filename = os.path.basename(rdb_file).split(".")[0]
+            data_version = filename + "_" + data_date_str
+
 
         docker_build_command = f"sudo docker build --build-arg data_file={rdb_file} -t mvdb:{data_version} ."
         print(f"building docker image using command: {docker_build_command}")
